@@ -24,6 +24,8 @@ class StockLog extends Model
     protected $fillable = [
         "quantity",
         "type",
+        "user_id",
+        "stock_id"
     ];
 
     public function user(): BelongsTo

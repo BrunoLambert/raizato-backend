@@ -4,6 +4,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\StockLogController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -64,9 +65,18 @@ Route::controller(ProductController::class)->group(function () {
 
 Route::controller(StockController::class)->group(function () {
     Route::prefix("/stocks")->group(function () {
-        Route::get("/", "index")->middleware('auth:sanctum');
+        Route::get("/", "index")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
         Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
         Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
         Route::delete("/{id}", "destroy")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    });
+});
+
+Route::controller(StockLogController::class)->group(function () {
+    Route::prefix("/stocks/logs")->group(function () {
+        Route::get("/", "index")->middleware(['auth:sanctum']);
+        Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+        Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckJustAdmin"]);
+        Route::delete("/{id}", "destroy")->middleware(['auth:sanctum', "CheckJustAdmin"]);
     });
 });

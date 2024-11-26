@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateStockLogRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class UpdateStockLogRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +23,8 @@ class UpdateStockLogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            "quantity" => "min:0",
+            "type" => ['required', Rule::in(["purchase", "return", "sale", "loss"])]
         ];
     }
 }

@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreStockLogRequest extends FormRequest
+class CreateStockLogRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,8 +24,7 @@ class StoreStockLogRequest extends FormRequest
     {
         return [
             "quantity" => "min:1|required",
-            "stock_id" => "numeric|required",
-            "user_id" => "numeric|required",
+            "product_id" => "numeric|required",
             "type" => ['required', Rule::in(["purchase", "return", "sale", "loss"])]
         ];
     }
