@@ -13,7 +13,11 @@ class Category extends Model
      * @var array
      */
     protected $attributes = [
-        "name" => ""
+        "name" => "Category Name"
+    ];
+
+    protected $fillable = [
+        "name"
     ];
 
     /**

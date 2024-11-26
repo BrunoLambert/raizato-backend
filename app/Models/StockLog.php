@@ -21,6 +21,11 @@ class StockLog extends Model
         "type" => "purchase"
     ];
 
+    protected $fillable = [
+        "quantity",
+        "type",
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

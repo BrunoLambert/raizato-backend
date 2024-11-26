@@ -18,6 +18,12 @@ class Supplier extends Model
         "contact" => ""
     ];
 
+    protected $fillable = [
+        "name",
+        "cnpj",
+        "contact"
+    ];
+
     /**
      * Get the products for the supplier.
      */

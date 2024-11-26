@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,12 +23,30 @@ Route::prefix("/user")->group(function () {
     Route::put("/", [UserController::class, 'edit'])->middleware('auth:sanctum');
 });
 
-Route::prefix("/users")->group(function () {
-    Route::controller(UserController::class)->group(function () {
+Route::controller(UserController::class)->group(function () {
+    Route::prefix("/users")->group(function () {
         Route::get("/", "index")->middleware("CheckNotCommonUser");
         Route::put("/{id}", 'update')->middleware(['auth:sanctum', "CheckNotCommonUser"]);
         Route::delete("/{id}", 'destroy')->middleware(['auth:sanctum', "CheckNotCommonUser"]);
 
         Route::post("/register", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    });
+});
+
+Route::controller(CategoryController::class)->group(function () {
+    Route::prefix("/categories")->group(function () {
+        Route::get("/", "index")->middleware('auth:sanctum');
+        Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+        Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+        Route::delete("/{id}", "destroy")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    });
+});
+
+Route::controller(SupplierController::class)->group(function () {
+    Route::prefix("/suppliers")->group(function () {
+        Route::get("/", "index")->middleware('auth:sanctum');
+        Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+        Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+        Route::delete("/{id}", "destroy")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
     });
 });
