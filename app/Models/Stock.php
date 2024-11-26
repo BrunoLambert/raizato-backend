@@ -17,6 +17,11 @@ class Stock extends Model
         "quantity" => 0
     ];
 
+    protected $fillable = [
+        "quantity",
+        "product_id"
+    ];
+
     /**
      * Get the product for the stock.
      */
