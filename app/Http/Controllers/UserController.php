@@ -5,27 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
-
-    /**
-     * Check if there is an admin
-     */
-    public function initAdmin()
-    {
-        try {
-            $adminUser = User::where('role', 'admin')->first();
-
-            return response()->json([
-                "check" => isset($adminUser)
-            ], 200);
-        } catch (\Throwable $th) {
-            return response($th->errorInfo, 500);
-        }
-    }
-
     /**
      * Display a listing of the resource.
      */
@@ -46,14 +31,16 @@ class UserController extends Controller
         try {
             $input = $request->all();
             $input['password'] = bcrypt($input['password']);
+
             $new_user = User::create($input);
 
-            $success['token'] =  $new_user->createToken('RaizatoApp')->plainTextToken;
             $success['name'] =  $new_user->fullname;
+            $success["message"] = "User Register successfully";
 
-            return $this->sendResponse($success, "User Register successfully");
+            return response($success, 201);
         } catch (\Throwable $th) {
-            return response($th->errorInfo, 500);
+            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
+            return response($error, 500);
         }
     }
 
@@ -66,14 +53,13 @@ class UserController extends Controller
             $userID = $request->user()->id;
             $newData = $request->all();
 
-            $updatedUser = User::find($userID)->update($newData);
-
-            $success['token'] =  $updatedUser->createToken('RaizatoApp')->plainTextToken;
-            $success['name'] =  $updatedUser->fullname;
-
-            return $this->sendResponse($success, "User updated successfully");
+            if (User::find($userID)->update($newData)) {
+                return response("User updated successfully", 202);
+            }
+            throw new Exception("It was not possible to complete the update");
         } catch (\Throwable $th) {
-            return response($th->errorInfo, 500);
+            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
+            return response($error, 500);
         }
     }
 
@@ -91,38 +77,43 @@ class UserController extends Controller
                 return response("Not authorizated", 403);
             }
 
-            $toUpdateUser->update($toUpdateData);
+            if ($toUpdateUser->update($toUpdateData)) {
+                return response("User updated successfully", 202);
+            }
 
-            return $this->sendResponse(
-                ["fullname" => $toUpdateUser->fullname],
-                "User updated successfully"
-            );
+            throw new Exception("It was not possible to complete the update");
         } catch (\Throwable $th) {
-            return response($th->errorInfo, 500);
+            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
+            return response($error, 500);
         }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $id, Request $request)
+    public function destroy(int $id, Request $request)
     {
         try {
             $authUser = $request->user();
             $toDeleteUser = User::find($id);
 
+            if (!isset($toDeleteUser)) {
+                return response("Not found", 404);
+            }
+
             if ($authUser->id !== $id && $toDeleteUser->role === "admin") {
                 return response("Not authorizated", 403);
             }
 
-            $toDeleteUser->delete();
+            if ($toDeleteUser->delete()) {
+                DB::table("personal_access_tokens")->where("tokenable_id", $toDeleteUser->id)->delete();
+                return response("User deleted successfully", 202);
+            }
 
-            return $this->sendResponse(
-                ["fullname" => $toDeleteUser->fullname],
-                "User deleted successfully"
-            );
+            throw new Exception("It was not possible to complete the delete");
         } catch (\Throwable $th) {
-            return response($th->errorInfo, 500);
+            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
+            return response($error, 500);
         }
     }
 }
