@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -44,6 +45,15 @@ Route::controller(CategoryController::class)->group(function () {
 
 Route::controller(SupplierController::class)->group(function () {
     Route::prefix("/suppliers")->group(function () {
+        Route::get("/", "index")->middleware('auth:sanctum');
+        Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+        Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+        Route::delete("/{id}", "destroy")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    });
+});
+
+Route::controller(ProductController::class)->group(function () {
+    Route::prefix("/products")->group(function () {
         Route::get("/", "index")->middleware('auth:sanctum');
         Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
         Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
