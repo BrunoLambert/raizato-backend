@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Product extends Model
 {
+    use HasFactory;
     /**
      * The model's default values for attributes.
      *
@@ -23,6 +25,11 @@ class Product extends Model
         "expiration_date" => "2001-03-10",
     ];
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         "name",
         "code",
@@ -36,18 +43,24 @@ class Product extends Model
     ];
 
     /**
-     * Get the products for the supplier.
+     * Get the category for the product.
      */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
+    /**
+     * Get the supplier for the product.
+     */
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
     }
 
+    /**
+     * Get the stock of the product.
+     */
     public function stock(): HasOne
     {
         return $this->hasOne(Stock::class);

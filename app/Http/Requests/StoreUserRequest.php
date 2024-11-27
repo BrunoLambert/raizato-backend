@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\UserRoleEnum;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreUserRequest extends FormRequest
 {
@@ -16,7 +18,7 @@ class StoreUserRequest extends FormRequest
         if ($usersCount === 0) return true;
 
         $user = auth('sanctum')->user();
-        
+
         return (isset($user) && $user->role !== "common");
     }
 
@@ -31,7 +33,8 @@ class StoreUserRequest extends FormRequest
             'fullname' => 'required',
             "email" => 'required|email',
             "cellphone" => "required",
-            "password" => "required"
+            "password" => "required",
+            "role" => [Rule::enum(UserRoleEnum::class)]
         ];
     }
 }

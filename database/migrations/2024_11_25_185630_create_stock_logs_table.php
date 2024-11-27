@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\StockLogTypeEnum;
 use App\Models\Stock;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
@@ -18,7 +19,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->smallInteger("quantity")->unsigned();
-            $table->enum("type", ["purchase", "return", "sale", "loss"]);
+            $table->enum("type", array_column(StockLogTypeEnum::cases(), 'value'));
 
             $table->foreignIdFor(Stock::class);
             $table->foreignIdFor(User::class);

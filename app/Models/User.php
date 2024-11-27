@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Enums\UserRoleEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -56,17 +58,13 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => UserRoleEnum::class
         ];
     }
 
-    public function isAdminOrManager()
-    {
-        return $this->role !== "common";
-    }
-
-
-    // Relationships
-
+    /**
+     * Get the logs that were created by the user.
+     */
     public function logs(): HasMany
     {
         return $this->hasMany(StockLog::class);

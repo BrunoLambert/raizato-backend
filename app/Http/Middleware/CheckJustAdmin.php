@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\UserRoleEnum;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +17,7 @@ class CheckJustAdmin
     public function handle(Request $request, Closure $next): Response
     {
         $user = auth('sanctum')->user();
-        if (isset($user) && $user->role === "admin") {
+        if (isset($user) && $user->role === UserRoleEnum::Admin) {
             return $next($request);
         }
 

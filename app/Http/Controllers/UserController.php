@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRoleEnum;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
@@ -73,7 +74,7 @@ class UserController extends Controller
             $toUpdateUser = User::find($id);
             $toUpdateData = $request->all();
 
-            if ($authUser->id !== $id && $toUpdateUser->role === "admin") {
+            if ($authUser->id !== $id && $toUpdateUser->role === UserRoleEnum::Admin) {
                 return response("Not authorizated", 403);
             }
 
@@ -101,7 +102,7 @@ class UserController extends Controller
                 return response("Not found", 404);
             }
 
-            if ($authUser->id !== $id && $toDeleteUser->role === "admin") {
+            if ($authUser->id !== $id && $toDeleteUser->role === UserRoleEnum::Admin) {
                 return response("Not authorizated", 403);
             }
 

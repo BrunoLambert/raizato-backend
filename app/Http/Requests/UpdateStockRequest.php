@@ -22,7 +22,7 @@ class UpdateStockRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "quantity" => "min:0"
+            "quantity" => "numeric|min:0"
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\StockLogTypeEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,7 +25,7 @@ class UpdateStockLogRequest extends FormRequest
     {
         return [
             "quantity" => "min:0",
-            "type" => ['required', Rule::in(["purchase", "return", "sale", "loss"])]
+            "type" => ['required', Rule::enum(StockLogTypeEnum::class)]
         ];
     }
 }

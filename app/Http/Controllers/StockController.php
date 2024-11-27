@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\StockLogTypeEnum;
 use App\Models\Stock;
 use App\Http\Requests\StoreStockRequest;
 use App\Http\Requests\UpdateStockRequest;
+use App\Models\StockLog;
 use Exception;
 
 class StockController extends Controller
@@ -14,7 +16,7 @@ class StockController extends Controller
      */
     public function index()
     {
-        $result["data"] = Stock::with(["product:id,name"])->get();
+        $result["data"] = Stock::with(["product:id,name,category_id,supplier_id", "product.category", "product.supplier"])->get();
         $result["size"] = count($result["data"]);
 
         return response($result, 200);
@@ -34,7 +36,15 @@ class StockController extends Controller
             }
 
             $result["message"] = "Registered successfully";
-            $result["data"] = $newData->name;
+            $result["data"] = $newData;
+
+            $stocklog = [
+                "quantity" => $newData->quantity,
+                "type" => StockLogTypeEnum::Creation,
+                "stock_id" => $newData->id,
+                "user_id" => $request->user()->id
+            ];
+            StockLog::create($stocklog);
 
             return response($result, 201);
         } catch (\Throwable $th) {
@@ -62,10 +72,19 @@ class StockController extends Controller
             if (!isset($toUpdate)) {
                 return response("Not found", 404);
             }
+            return response(StockLogTypeEnum::cases());
 
             if ($toUpdate->update($toUpdateData)) {
                 $result["message"] = "Updated successfully";
-                $result["data"] = $toUpdate->name;
+                $result["data"] = $toUpdate;
+
+                $stocklog = [
+                    "quantity" => $toUpdateData["quantity"],
+                    "type" => StockLogTypeEnum::Adjustment,
+                    "stock_id" => $toUpdate->id,
+                    "user_id" => $request->user()->id
+                ];
+                StockLog::create($stocklog);
 
                 return response($result, 202);
             }
