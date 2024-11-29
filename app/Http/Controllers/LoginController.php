@@ -29,6 +29,8 @@ class LoginController extends Controller
 
             return $this->sendResponse($success, 'Login Success');
         }
+
+        return response(["message" => "Login Failed"], 403);
     }
 
     /**

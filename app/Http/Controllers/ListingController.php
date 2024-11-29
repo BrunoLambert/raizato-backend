@@ -15,7 +15,7 @@ class ListingController extends Controller
             ->get()
             ->filter(function ($stock) {
                 return $stock->quantity < $stock->product->minimum_stock;
-            });
+            })->take(15);
 
         return response($stocks);
     }
@@ -25,7 +25,8 @@ class ListingController extends Controller
         $stocks = Product::has('stock')
             ->with('stock')
             ->orderBy('expiration_date')
-            ->get();
+            ->get()
+            ->take(15);
 
         return response($stocks);
     }
