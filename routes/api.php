@@ -28,49 +28,48 @@ Route::prefix("/user")->group(function () {
 });
 
 Route::controller(UserController::class)->prefix("/users")->group(function () {
-    Route::get("/", "index");
-    Route::put("/{id}", 'update');
-    Route::delete("/{id}", 'destroy');
-
-    Route::post("/register", "store");
-})->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::get("/", "index")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::put("/{id}", 'update')->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::delete("/{id}", 'destroy')->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+});
 
 Route::controller(CategoryController::class)->prefix("/categories")->group(function () {
-    Route::get("/", "index");
-    Route::post("/", "store")->middleware(["CheckNotCommonUser"]);
-    Route::put("/{id}", "update")->middleware(["CheckNotCommonUser"]);
-    Route::delete("/{id}", "destroy")->middleware(["CheckNotCommonUser"]);
-})->middleware('auth:sanctum');
+    Route::get("/", "index")->middleware('auth:sanctum');
+    Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::delete("/{id}", "destroy")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+});
 
 Route::controller(SupplierController::class)->prefix("/suppliers")->group(function () {
-    Route::get("/", "index");
-    Route::post("/", "store")->middleware(["CheckNotCommonUser"]);
-    Route::put("/{id}", "update")->middleware(["CheckNotCommonUser"]);
-    Route::delete("/{id}", "destroy")->middleware(["CheckNotCommonUser"]);
-})->middleware('auth:sanctum');
+    Route::get("/", "index")->middleware('auth:sanctum');
+    Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::delete("/{id}", "destroy")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+});
 
 Route::controller(ProductController::class)->prefix("/products")->group(function () {
-    Route::get("/", "index");
-    Route::post("/", "store")->middleware(["CheckNotCommonUser"]);
-    Route::put("/{id}", "update")->middleware(["CheckNotCommonUser"]);
-    Route::delete("/{id}", "destroy")->middleware(["CheckNotCommonUser"]);
-})->middleware('auth:sanctum');
+    Route::get("/", "index")->middleware('auth:sanctum');
+    Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::delete("/{id}", "destroy")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+});
 
 Route::controller(StockController::class)->prefix("/stocks")->group(function () {
-    Route::get("/", "index");
-    Route::post("/", "store");
-    Route::put("/{id}", "update");
-    Route::delete("/{id}", "destroy");
-})->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::get("/", "index")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+    Route::delete("/{id}", "destroy")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
+});
 
 Route::controller(StockLogController::class)->prefix("/stocks/logs")->group(function () {
-    Route::get("/", "index");
-    Route::post("/", "store");
-    Route::put("/{id}", "update")->middleware(["CheckJustAdmin"]);
-    Route::delete("/{id}", "destroy")->middleware(["CheckJustAdmin"]);
-})->middleware(['auth:sanctum']);
+    Route::get("/", "index")->middleware(['auth:sanctum']);
+    Route::post("/", "store")->middleware(['auth:sanctum']);
+    Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckJustAdmin"]);
+    Route::delete("/{id}", "destroy")->middleware(['auth:sanctum', "CheckJustAdmin"]);
+});
 
 Route::controller(ListingController::class)->prefix("/listing")->group(function () {
-    Route::get("/lowstock", 'getLowStock');
-    Route::get("/expiration", 'getCloseToExpirationDate');
-})->middleware(['auth:sanctum']);
+    Route::get("/lowstock", 'getLowStock')->middleware(['auth:sanctum']);
+    Route::get("/expiration", 'getCloseToExpirationDate')->middleware(['auth:sanctum']);
+});

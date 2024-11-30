@@ -30,7 +30,7 @@ class LoginController extends Controller
             return $this->sendResponse($success, 'Login Success');
         }
 
-        return response(["message" => "Login Failed"], 403);
+        return $this->sendError(false, "Login Failed", 403);
     }
 
     /**
@@ -38,11 +38,15 @@ class LoginController extends Controller
      */
     public function logout(Request $request)
     {
-        Auth::guard('web')->logout();
+        try {
+            Auth::guard('web')->logout();
 
-        DB::table("personal_access_tokens")->where("tokenable_id", $request->user()->id)->delete();
+            DB::table("personal_access_tokens")->where("tokenable_id", $request->user()->id)->delete();
 
-        return response("Logout Completed", 200);
+            return $this->sendResponse(true, "Logout Completed");
+        } catch (\Throwable $th) {
+            return $this->sendError($th, "Server Error", 500);
+        }
     }
 
     /**
@@ -53,11 +57,9 @@ class LoginController extends Controller
         try {
             $adminUser = User::where('role', 'admin')->first();
 
-            return response()->json([
-                "check" => isset($adminUser)
-            ], 200);
+            return $this->sendResponse(isset($adminUser), "Ok");
         } catch (\Throwable $th) {
-            return response($th->errorInfo, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
     }
 
@@ -66,15 +68,24 @@ class LoginController extends Controller
      */
     public function initAdmin(StoreAdminRequest $request)
     {
-        $input = $request->all();
-        $input['password'] = bcrypt($input['password']);
-        $input['role'] = 'admin';
+        try {
+            $usersCount = User::count();
+            if ($usersCount > 0) {
+                return $this->sendError("Invalid Request", "Not Found", 404);
+            }
 
-        $new_user = User::create($input);
+            $input = $request->all();
+            $input['password'] = bcrypt($input['password']);
+            $input['role'] = 'admin';
 
-        $success['token'] =  $new_user->createToken('RaizatoApp')->plainTextToken;
-        $success['name'] =  $new_user->fullname;
+            $new_user = User::create($input);
 
-        return $this->sendResponse($success, "Admin registered successfully");
+            $success['token'] =  $new_user->createToken('RaizatoApp')->plainTextToken;
+            $success['name'] =  $new_user->fullname;
+
+            return $this->sendResponse($success, "Admin registered successfully");
+        } catch (\Throwable $th) {
+            return $this->sendError($th, "Server Error", 500);
+        }
     }
 }

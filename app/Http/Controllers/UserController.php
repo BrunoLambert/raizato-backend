@@ -18,8 +18,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         //
-        $response['users'] = User::all();
-        $response['size'] = count($response['users']);
+        $response = User::paginate(15);
 
         return $this->sendResponse($response, "Ok");
     }
@@ -35,13 +34,9 @@ class UserController extends Controller
 
             $new_user = User::create($input);
 
-            $success['name'] =  $new_user->fullname;
-            $success["message"] = "User Register successfully";
-
-            return response($success, 201);
+            return $this->sendResponse($new_user, "User Register successfully");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
     }
 
@@ -55,12 +50,11 @@ class UserController extends Controller
             $newData = $request->all();
 
             if (User::find($userID)->update($newData)) {
-                return response("User updated successfully", 202);
+                return $this->sendResponse($newData, "User updated successfully");
             }
             throw new Exception("It was not possible to complete the update");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
     }
 
@@ -75,17 +69,16 @@ class UserController extends Controller
             $toUpdateData = $request->all();
 
             if ($authUser->id !== $id && $toUpdateUser->role === UserRoleEnum::Admin) {
-                return response("Not authorizated", 403);
+                return $this->sendError("", "Not authorizated", 403);
             }
 
             if ($toUpdateUser->update($toUpdateData)) {
-                return response("User updated successfully", 202);
+                return $this->sendResponse($toUpdateData, "User updated successfully");
             }
 
             throw new Exception("It was not possible to complete the update");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
     }
 
@@ -99,22 +92,21 @@ class UserController extends Controller
             $toDeleteUser = User::find($id);
 
             if (!isset($toDeleteUser)) {
-                return response("Not found", 404);
+                return $this->sendError("Not found", "Not found", 404);
             }
 
             if ($authUser->id !== $id && $toDeleteUser->role === UserRoleEnum::Admin) {
-                return response("Not authorizated", 403);
+                return $this->sendError("Auth Failed", "Not authorizated", 403);
             }
 
             if ($toDeleteUser->delete()) {
                 DB::table("personal_access_tokens")->where("tokenable_id", $toDeleteUser->id)->delete();
-                return response("User deleted successfully", 202);
+                return $this->sendResponse("User deleted successfully", 202);
             }
 
             throw new Exception("It was not possible to complete the delete");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
     }
 }

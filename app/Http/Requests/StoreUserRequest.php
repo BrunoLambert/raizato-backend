@@ -15,7 +15,7 @@ class StoreUserRequest extends FormRequest
     public function authorize(): bool
     {
         $usersCount = User::count();
-        if ($usersCount === 0) return true;
+        if ($usersCount === 0) return false;
 
         $user = auth('sanctum')->user();
 
