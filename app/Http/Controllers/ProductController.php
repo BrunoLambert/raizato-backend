@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SearchProductRequest;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
@@ -14,12 +15,27 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $result["data"] = Product::with(["category:id,name", "supplier:id,name"])->get();
-        $result["size"] = count($result["data"]);
+        $result = Product::with(["category:id,name", "supplier:id,name"])->paginate(15);
 
-        return response($result, 200);
+        return $this->sendResponse($result, "Ok");
     }
 
+    /**
+     * Search depending on the search param.
+     */
+    public function search(SearchProductRequest $request)
+    {
+        $input = $request->all();
+        $result = Product::where('name', 'LIKE', '%' . $input['search'] . '%');
+
+        if ($input["completed"]) {
+            $result = $result->with(['category:id,name', 'supplier:id,name']);
+        }
+
+        $result = $result->take(10)->get($input['completed'] ? ["name", "id"] : '');
+
+        return $this->sendResponse($result, "Search completed");
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -30,25 +46,13 @@ class ProductController extends Controller
             $input = $request->all();
             $newData = Product::create($input);
             if (!isset($newData)) {
-                return response("It was not possible to create it");
+                return $this->sendError("Server Error", "Not possible to create", 500);
             }
 
-            $result["message"] = "Registered successfully";
-            $result["data"] = $newData->name;
-
-            return response($result, 201);
+            return $this->sendResponse($newData, "Registered successfully");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Product $product)
-    {
-        //
     }
 
     /**
@@ -60,20 +64,16 @@ class ProductController extends Controller
             $toUpdateData = $request->all();
             $toUpdate = Product::find($id);
             if (!isset($toUpdate)) {
-                return response("Not found", 404);
+                return $this->sendError("Not Found", "Not Found", 404);
             }
 
             if ($toUpdate->update($toUpdateData)) {
-                $result["message"] = "Updated successfully";
-                $result["data"] = $toUpdate->name;
-
-                return response($result, 202);
+                return $this->sendResponse($toUpdate, "Updated successfully");
             }
 
             throw new Exception("It was not possible to complete the update");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
     }
 
@@ -86,16 +86,15 @@ class ProductController extends Controller
             $toDelete = Product::find($id);
 
             if (!isset($toDelete)) {
-                return response("Not found", 404);
+                return $this->sendError("Not Found", "Not Found", 404);
             }
             if ($toDelete->delete()) {
-                return response("Deleted successfully", 202);
+                return $this->sendResponse($toDelete, "Deleted successfully");
             }
 
             throw new Exception("It was not possible to complete the delete");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
     }
 }

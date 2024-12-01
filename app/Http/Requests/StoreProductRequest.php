@@ -23,7 +23,7 @@ class StoreProductRequest extends FormRequest
     {
         return [
             "name" => 'required',
-            "code" => "size:10|required",
+            "code" => "max:10|required",
             "cost_price" => 'numeric',
             "selling_price" => 'numeric',
             "minimum_stock" => 'numeric|min:1',

@@ -36,6 +36,7 @@ Route::controller(UserController::class)->prefix("/users")->group(function () {
 
 Route::controller(CategoryController::class)->prefix("/categories")->group(function () {
     Route::get("/", "index")->middleware('auth:sanctum');
+    Route::get("/search", "search")->middleware(['auth:sanctum']);
     Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
     Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
     Route::delete("/{id}", "destroy")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
@@ -43,6 +44,7 @@ Route::controller(CategoryController::class)->prefix("/categories")->group(funct
 
 Route::controller(SupplierController::class)->prefix("/suppliers")->group(function () {
     Route::get("/", "index")->middleware('auth:sanctum');
+    Route::get("/search", "search")->middleware(['auth:sanctum']);
     Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
     Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
     Route::delete("/{id}", "destroy")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
@@ -50,6 +52,7 @@ Route::controller(SupplierController::class)->prefix("/suppliers")->group(functi
 
 Route::controller(ProductController::class)->prefix("/products")->group(function () {
     Route::get("/", "index")->middleware('auth:sanctum');
+    Route::get("/search", "search")->middleware(['auth:sanctum']);
     Route::post("/", "store")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
     Route::put("/{id}", "update")->middleware(['auth:sanctum', "CheckNotCommonUser"]);
     Route::delete("/{id}", "destroy")->middleware(['auth:sanctum', "CheckNotCommonUser"]);

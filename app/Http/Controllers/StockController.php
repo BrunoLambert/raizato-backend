@@ -16,10 +16,9 @@ class StockController extends Controller
      */
     public function index()
     {
-        $result["data"] = Stock::with(["product:id,name,category_id,supplier_id", "product.category", "product.supplier"])->get();
-        $result["size"] = count($result["data"]);
+        $result = Stock::with(["product:id,name,category_id,supplier_id,minimum_stock", "product.category", "product.supplier"])->paginate(15);
 
-        return response($result, 200);
+        return $this->sendResponse($result, "Ok");
     }
 
 
@@ -32,11 +31,8 @@ class StockController extends Controller
             $input = $request->all();
             $newData = Stock::create($input);
             if (!isset($newData)) {
-                return response("It was not possible to create it");
+                return $this->sendError("Server Error", "Not possible to create", 500);
             }
-
-            $result["message"] = "Registered successfully";
-            $result["data"] = $newData;
 
             $stocklog = [
                 "quantity" => $newData->quantity,
@@ -46,19 +42,10 @@ class StockController extends Controller
             ];
             StockLog::create($stocklog);
 
-            return response($result, 201);
+            return $this->sendResponse($newData, "Registered successfully");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Stock $stock)
-    {
-        //
     }
 
     /**
@@ -70,14 +57,10 @@ class StockController extends Controller
             $toUpdateData = $request->all();
             $toUpdate = Stock::find($id);
             if (!isset($toUpdate)) {
-                return response("Not found", 404);
+                return $this->sendError("Not Found", "Not Found", 404);
             }
-            return response(StockLogTypeEnum::cases());
 
             if ($toUpdate->update($toUpdateData)) {
-                $result["message"] = "Updated successfully";
-                $result["data"] = $toUpdate;
-
                 $stocklog = [
                     "quantity" => $toUpdateData["quantity"],
                     "type" => StockLogTypeEnum::Adjustment,
@@ -86,13 +69,12 @@ class StockController extends Controller
                 ];
                 StockLog::create($stocklog);
 
-                return response($result, 202);
+                return $this->sendResponse($toUpdate, "Updated successfully");
             }
 
             throw new Exception("It was not possible to complete the update");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
     }
 
@@ -105,16 +87,15 @@ class StockController extends Controller
             $toDelete = Stock::find($id);
 
             if (!isset($toDelete)) {
-                return response("Not found", 404);
+                return $this->sendError("Not Found", "Not Found", 404);
             }
             if ($toDelete->delete()) {
-                return response("Deleted successfully", 202);
+                return $this->sendResponse($toDelete, "Deleted successfully");
             }
 
             throw new Exception("It was not possible to complete the delete");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
     }
 }

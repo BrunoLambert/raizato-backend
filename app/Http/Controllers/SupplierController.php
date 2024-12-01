@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SearchSupplierRequest;
 use App\Models\Supplier;
 use App\Http\Requests\StoreSupplierRequest;
 use App\Http\Requests\UpdateSupplierRequest;
@@ -14,10 +15,20 @@ class SupplierController extends Controller
      */
     public function index()
     {
-        $result["data"] = Supplier::all();
-        $result["size"] = count($result["data"]);
+        $result = Supplier::paginate(15);
 
-        return response($result, 200);
+        return $this->sendResponse($result, "Ok");
+    }
+
+    /**
+     * Search depending on the search param.
+     */
+    public function search(SearchSupplierRequest $request)
+    {
+        $input = $request->all();
+        $result = Supplier::where('name', 'LIKE', '%' . $input['search'] . '%')->take(10)->get(["name", "id"]);
+
+        return $this->sendResponse($result, "Search completed");
     }
 
 
@@ -30,24 +41,13 @@ class SupplierController extends Controller
             $input = $request->all();
             $newData = Supplier::create($input);
             if (!isset($newData)) {
-                return response("It was not possible to create it");
+                return $this->sendError("Server Error", "Not possible to create", 500);
             }
 
-            $result["message"] = "Registered successfully";
-            $result["data"] = $newData->name;
-
-            return response($result, 201);
+            return $this->sendResponse($newData, "Registered successfully");
         } catch (\Throwable $th) {
-            return response(['error' => $th], 500);
+            return $this->sendError($th, "Server Error", 500);
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Supplier $category)
-    {
-        //
     }
 
     /**
@@ -59,20 +59,16 @@ class SupplierController extends Controller
             $toUpdateData = $request->all();
             $toUpdate = Supplier::find($id);
             if (!isset($toUpdate)) {
-                return response("Not found", 404);
+                return $this->sendError("Not Found", "Not Found", 404);
             }
 
             if ($toUpdate->update($toUpdateData)) {
-                $result["message"] = "Updated successfully";
-                $result["supplier"] = $toUpdate->name;
-
-                return response($result, 202);
+                return $this->sendResponse($toUpdate, "Updated successfully");
             }
 
             throw new Exception("It was not possible to complete the update");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
     }
 
@@ -85,16 +81,15 @@ class SupplierController extends Controller
             $toDelete = Supplier::find($id);
 
             if (!isset($toDelete)) {
-                return response("Not found", 404);
+                return $this->sendError("Not Found", "Not Found", 404);
             }
             if ($toDelete->delete()) {
-                return response("Deleted successfully", 202);
+                return $this->sendResponse($toDelete, "Deleted successfully");
             }
 
             throw new Exception("It was not possible to complete the delete");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
     }
 }

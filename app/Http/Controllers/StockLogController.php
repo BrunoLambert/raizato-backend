@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRoleEnum;
 use App\Http\Requests\CreateStockLogRequest;
 use App\Models\StockLog;
 use App\Http\Requests\UpdateStockLogRequest;
@@ -18,14 +19,18 @@ class StockLogController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = StockLog::with(["stock:id,product_id,quantity", "stock" => ["product:id,name"]]);
-        if ($user->role === "common") {
+        $query = StockLog::with([
+            "stock" =>
+            [
+                "product:id,name,category_id,supplier_id" => ["category:id,name", "supplier:id,name"]
+            ]
+        ]);
+        if ($user->role === UserRoleEnum::Common) {
             $query->where("user_id", $user->id);
         }
-        $result["data"] = $query->get();
-        $result["size"] = count($result["data"]);
+        $query = $query->paginate(15);
 
-        return response($result, 200);
+        return $this->sendResponse($query, "Ok");
     }
 
     /**
@@ -44,7 +49,7 @@ class StockLogController extends Controller
 
             $product = Product::find($data["product_id"]);
             if (!isset($product)) {
-                return response("Not found", 404);
+                return $this->sendError("Not Found", "Product was not found", 404);
             }
 
             $stock = $product->stock()->get()->first();
@@ -65,25 +70,13 @@ class StockLogController extends Controller
             $newStocklog = StockLog::create($stocklog);
             if (!isset($newStocklog)) {
                 $stock->update(["quantity" => $previousQuantity]);
-                return response("It was not possible to create it");
+                return $this->sendError("Server Error", "Log was not created", 500);
             }
 
-            $result["message"] = "Registered successfully";
-            $result["data"] = $stocklog;
-
-            return response($result, 201);
+            return $this->sendResponse($stocklog, "Registered successfully");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(StockLog $stockLog)
-    {
-        //
     }
 
     /**
@@ -95,20 +88,16 @@ class StockLogController extends Controller
             $toUpdateData = $request->all();
             $toUpdate = StockLog::find($id);
             if (!isset($toUpdate)) {
-                return response("Not found", 404);
+                return $this->sendError("Not Found", "Not Found", 404);
             }
 
             if ($toUpdate->update($toUpdateData)) {
-                $result["message"] = "Updated successfully";
-                $result["data"] = $toUpdate;
-
-                return response($result, 202);
+                return $this->sendResponse($toUpdate, "Updated successfully");
             }
 
             throw new Exception("It was not possible to complete the update");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
     }
 
@@ -121,16 +110,15 @@ class StockLogController extends Controller
             $toDelete = StockLog::find($id);
 
             if (!isset($toDelete)) {
-                return response("Not found", 404);
+                return $this->sendError("Not Found", "Not Found", 404);
             }
             if ($toDelete->delete()) {
-                return response("Deleted successfully", 202);
+                return $this->sendResponse($toDelete, "Deleted successfully");
             }
 
             throw new Exception("It was not possible to complete the delete");
         } catch (\Throwable $th) {
-            $error = isset($th->errorInfo) ? $th->errorInfo : $th;
-            return response($error, 500);
+            return $this->sendError($th, "Server Error", 500);
         }
     }
 }
